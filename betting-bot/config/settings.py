@@ -7,7 +7,11 @@ Configuración central del bot de apuestas deportivas.
 # "odds_api"  → The Odds API (recomendado, sin 429, registro gratis en the-odds-api.com)
 
 ODDS_SOURCE = "odds_api"
+import os
 
+DISCORD_BOT_TOKEN  = os.environ.get("DISCORD_BOT_TOKEN", "")
+DISCORD_CHANNEL_ID = int(os.environ.get("DISCORD_CHANNEL_ID", "0"))
+ODDS_API_KEY       = os.environ.get("ODDS_API_KEY", "")
 # ─── Cuotas objetivo ──────────────────────────────────────────────────────────
 ODDS_MIN = 1.50
 ODDS_MAX = 1.80
