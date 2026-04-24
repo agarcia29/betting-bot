@@ -459,7 +459,7 @@ class BettingBotOrchestrator:
         await send(
             "```\n"
             "╔══════════════════════════════════════╗\n"
-            "║       BOT DE SENALES INICIADO        ║\n"
+            "║       BOT DE SEÑALES INICIADO        ║\n"
             "╚══════════════════════════════════════╝\n"
             "```\n"
             f"Fecha: {now_col.strftime('%d/%m/%Y')}\n"
@@ -622,6 +622,6 @@ class BettingBotOrchestrator:
     async def _send_summary_discord(self, total: int, send):
         now_col = datetime.now(COT)
         if total == 0:
-            await send(f"Sin senales para la proxima hora — {now_col.strftime('%H:%M')} COT")
+            await send(f"Sin seÑales para la proxima hora — {now_col.strftime('%H:%M')} COT")
         else:
             await send(f"Analisis completo — {total} senal(es) enviada(s) — {now_col.strftime('%H:%M')} COT")
