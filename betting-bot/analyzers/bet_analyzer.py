@@ -1,16 +1,13 @@
 """
 Motor de análisis estadístico.
 Evalúa si una apuesta cumple los criterios y la clasifica en Tipo 1/2/3.
+Recibe estadísticas ya parseadas y devuelve:
+- ¿Cumple el criterio mínimo? (bool)
+- Tipo de apuesta (1, 2 o 3)
+- Porcentaje histórico de éxito
+- Monto sugerido a apostar
+- Resumen de stats para el mensaje Discord
 """
-
-    """
-    Recibe estadísticas ya parseadas y devuelve:
-    - ¿Cumple el criterio mínimo? (bool)
-    - Tipo de apuesta (1, 2 o 3)
-    - Porcentaje histórico de éxito
-    - Monto sugerido a apostar
-    - Resumen de stats para el mensaje Discord
-    """
 
 from typing import Optional
 from config.settings import BET_TYPES, BANKROLL, SPORT_CONFIG
