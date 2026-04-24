@@ -16,6 +16,12 @@ Comandos:
 import asyncio
 import importlib
 import sys
+import os
+
+DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN')
+DISCORD_CHANNEL_ID = os.getenv('DISCORD_CHANNEL_ID')
+ODDS_API_KEY = os.getenv('ODDS_API_KEY')
+
 
 _discord = importlib.import_module("discord")
 commands = importlib.import_module("discord.ext.commands")
