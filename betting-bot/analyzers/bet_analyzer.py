@@ -81,7 +81,7 @@ class BetAnalyzer:
             "recent_average": round(avg_recent, 1),
             "last_games": [round(s, 1) for s in last_games_stats[-5:]],
             "stake": stake,
-            "stake_label": f"${stake} USD",
+            "stake_label": f"${stake} COP",
         }
 
     # ─── Análisis de mercado de equipo (totales, BTTS, corners) ───────────────
@@ -136,7 +136,7 @@ class BetAnalyzer:
             "away_pct": round(away_pct * 100, 1) if away_pct else None,
             "h2h_pct": round(h2h_pct * 100, 1) if h2h_pct else None,
             "stake": stake,
-            "stake_label": f"${stake} USD",
+            "stake_label": f"${stake} COP",
         }
 
     # ─── Helpers internos ─────────────────────────────────────────────────────
