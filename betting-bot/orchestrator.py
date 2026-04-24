@@ -278,6 +278,7 @@ class BettingBotOrchestrator:
                     last_games_stats=last_vals,
                     season_average=season_avg,
                     is_home=is_home,
+                    sport=sport,
                 )
                 if analysis:
                     signal = {
@@ -299,6 +300,7 @@ class BettingBotOrchestrator:
                     away_last_games=away_games,
                     h2h_games=h2h_games,
                     stat_extractor=parsed["extractor"],
+                    sport=sport,
                 )
                 if analysis:
                     signal = {
@@ -581,7 +583,7 @@ class BettingBotOrchestrator:
                 is_home = any(p["name"].lower() == player_name.lower() for p in lineups.get("home", []))
                 analysis = self.analyzer.analyze_player_line(
                     line=line, stat_key=parsed["stat_key"],
-                    last_games_stats=last_vals, season_average=season_avg, is_home=is_home
+                    last_games_stats=last_vals, season_average=season_avg, is_home=is_home, sport=sport
                 )
                 if analysis:
                     signal = {
@@ -594,7 +596,7 @@ class BettingBotOrchestrator:
                 analysis = self.analyzer.analyze_team_market(
                     line=line, market_name=parsed["display_name"],
                     home_last_games=home_games, away_last_games=away_games,
-                    h2h_games=h2h_games, stat_extractor=parsed["extractor"]
+                    h2h_games=h2h_games, stat_extractor=parsed["extractor"], sport=sport
                 )
                 if analysis:
                     signal = {
