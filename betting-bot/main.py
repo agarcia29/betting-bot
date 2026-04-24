@@ -62,7 +62,11 @@ _running = False
 
 intents = _discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
+bot = commands.Bot(command_prefix="!", intents=intents, help_command=None, case_insensitive=True)
+
+@bot.event
+async def on_connect():
+    await bot.tree.sync()
 
 
 @bot.event
