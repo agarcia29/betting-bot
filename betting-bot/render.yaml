@@ -1,0 +1,13 @@
+services:
+  - type: worker
+    name: betting-bot
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      - key: DISCORD_BOT_TOKEN
+        sync: false
+      - key: DISCORD_CHANNEL_ID
+        sync: false
+      - key: ODDS_API_KEY
+        sync: false
