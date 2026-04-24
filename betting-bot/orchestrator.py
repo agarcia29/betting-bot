@@ -123,20 +123,37 @@ class BettingBotOrchestrator:
             sofa_by_league[league_key] = events
             await asyncio.sleep(0.5)
 
-        # 3. Filtrar partidos dentro de la ventana
-        matched: list[dict] = []
 
+       # 3. Filtrar partidos dentro de la ventana
+        matched: list[dict] = []
         for league_key, odds_events in odds_events_by_league.items():
             league_cfg = self.leagues[league_key]
             sofa_events = sofa_by_league.get(league_key, [])
 
+            print(f"\n[Debug] Liga: {league_cfg['name']}")
+            print(f"[Debug] Eventos OddsAPI: {len(odds_events)}")
+            print(f"[Debug] Eventos SofaScore: {len(sofa_events)}")
+
+            for oe in odds_events:
+                print(f"[Debug] OddsAPI: {oe.get('home_team')} vs {oe.get('away_team')} — {oe.get('start_time')}")
+
+            for se in sofa_events:
+                print(f"[Debug] SofaScore: {se['home_team']} vs {se['away_team']} — {se['start_time']}")
+
             for odds_event in odds_events:
                 sofa_event = self._match_event(odds_event, sofa_events)
                 if sofa_event is None:
+                    print(f"[Debug] SIN MATCH: {odds_event.get('home_team')} vs {odds_event.get('away_team')}")
                     continue
 
                 start_time: datetime = sofa_event["start_time"]
+                print(f"[Debug] Ventana UTC: {now_utc} → {window_end}")
+                print(f"[Debug] Start time: {start_time}")
+                print(f"[Debug] En ventana: {now_utc <= start_time <= window_end}")
+
                 if not (now_utc <= start_time <= window_end):
+                    mins = int((start_time - now_utc).total_seconds() / 60)
+                    print(f"[Debug] FUERA DE VENTANA: {sofa_event['event_name']} — faltan {mins} min")
                     continue
 
                 mins = int((start_time - now_utc).total_seconds() / 60)
@@ -148,7 +165,6 @@ class BettingBotOrchestrator:
                 print(f"[Bot] 🎯 Partido en ventana: {sofa_event['event_name']} "
                       f"(en {mins} min — {hora_col} COT)")
                 await self.discord.send_message(msg_partido)
-
                 matched.append({
                     "league_key": league_key,
                     "league_cfg": league_cfg,
