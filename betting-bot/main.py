@@ -169,8 +169,7 @@ async def ayuda(ctx):
 # ── Arranque: FastAPI + Discord en paralelo ───────────────────────────────────
 
 def run_web():
-    """Corre uvicorn en hilo separado."""
-    port = int(__import__("os").environ.get("PORT", 8000))
+    port = int(__import__("os").environ.get("PORT", 10000))  # 10000 no 8000
     uvicorn.run(app, host="0.0.0.0", port=port, log_level="warning")
 
 
