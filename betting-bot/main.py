@@ -20,7 +20,7 @@ import sys
 _discord = importlib.import_module("discord")
 commands = importlib.import_module("discord.ext.commands")
 
-from config.settings import DISCORD_BOT_TOKEN, DISCORD_CHANNEL_ID, LEAGUES
+from config.settings import LEAGUES
 
 FOOTBALL_ALIASES = {
     "la_liga":    "la_liga",
