@@ -97,15 +97,31 @@ NBA_MARKETS = [
 
 # ─── Umbrales estadísticos para clasificar tipo de apuesta ───────────────────
 # % de últimos partidos donde el jugador/equipo superó la línea
-TYPE_THRESHOLDS = {
-    3: 0.70,   # ≥70% de veces cumplió → Tipo 3
-    2: 0.55,   # ≥55% → Tipo 2
-    1: 0.40,   # ≥40% → Tipo 1 (mínimo para enviar señal)
+# Ventanas de analisis por deporte
+SPORT_CONFIG = {
+    "football": {
+        "recent_games_window": 8,   # ultimos 8 partidos de liga
+        "h2h_window": 5,            # H2H historico (no solo temporada)
+        "type_thresholds": {
+            3: 0.65,   # menos exigente porque hay menos datos H2H
+            2: 0.50,
+            1: 0.38,
+        },
+    },
+    "basketball": {
+        "recent_games_window": 5,   # NBA juega cada 2 dias, 5 es suficiente
+        "h2h_window": 4,            # se enfrentan mas seguido
+        "type_thresholds": {
+            3: 0.70,
+            2: 0.55,
+            1: 0.40,
+        },
+    },
 }
 
-# Ventana de análisis (últimos N partidos)
-RECENT_GAMES_WINDOW = 5
-HEAD_TO_HEAD_WINDOW = 2   # últimos H2H en temporada actual
+# Estos son los valores por defecto (fallback)
+RECENT_GAMES_WINDOW = 8
+HEAD_TO_HEAD_WINDOW = 5
 
 # Tiempo antes del partido para enviar señal (minutos)
 SIGNAL_LEAD_TIME_MINUTES = 50
