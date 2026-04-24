@@ -463,7 +463,7 @@ class BettingBotOrchestrator:
             f"Fecha: {now_col.strftime('%d/%m/%Y')}\n"
             f"Buscando partidos: `{now_col.strftime('%H:%M')}` a `{end_col.strftime('%H:%M')}` COT\n"
             f"Fuente: {source_label}\n"
-            f"Rango: 1.50 - 1.70\n"
+            f"Rango: 1.50 - 1.80\n"
             f"Ligas: {ligas}\n\n"
             f"_Analizando..._"
         )
