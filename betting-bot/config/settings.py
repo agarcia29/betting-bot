@@ -8,9 +8,6 @@ Configuración central del bot de apuestas deportivas.
 
 ODDS_SOURCE = "odds_api"
 
-# API key de The Odds API (gratis en https://the-odds-api.com)
-DISCORD_BOT_TOKEN = "MTQ5NzAwODg3MTQ4MTI4MjY3MQ.GG2duI.PJl9agOyUZ4HgYm6R0uMFtr6WBQRbdI49TVbFo"
-DISCORD_CHANNEL_ID = 1497012356360700035
 # ─── Cuotas objetivo ──────────────────────────────────────────────────────────
 ODDS_MIN = 1.50
 ODDS_MAX = 1.80
