@@ -1,44 +1,42 @@
 """
-Bot de Apuestas Deportivas — Modo servidor (Render / VPS).
-Se mantiene escuchando comandos de Discord y corre el analisis cuando se lo pides.
-
-Comandos:
-  !analizar nba
-  !analizar futbol        (te pregunta la liga)
-  !analizar la_liga
-  !analizar premier
-  !analizar bundesliga
-  !analizar serie_a
-  !analizar ligue_1
-  !analizar todas
+Bot de Apuestas Deportivas — Modo Web Service (Render free tier).
+Corre FastAPI + Bot de Discord en paralelo.
 """
 
 import asyncio
 import importlib
-import sys
-import os
-
-DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN')
-DISCORD_CHANNEL_ID = os.getenv('DISCORD_CHANNEL_ID')
-ODDS_API_KEY = os.getenv('ODDS_API_KEY')
-
+import threading
+import uvicorn
+from fastapi import FastAPI
 
 _discord = importlib.import_module("discord")
 commands = importlib.import_module("discord.ext.commands")
 
-from config.settings import LEAGUES
+from config.settings import DISCORD_BOT_TOKEN, DISCORD_CHANNEL_ID, LEAGUES
 
+# ── FastAPI (mantiene vivo el servicio en Render) ─────────────────────────────
+app = FastAPI()
+
+@app.get("/")
+def health():
+    return {"status": "ok", "bot": "betting-bot activo"}
+
+@app.get("/health")
+def ping():
+    return {"status": "ok"}
+
+# ── Discord Bot ───────────────────────────────────────────────────────────────
 FOOTBALL_ALIASES = {
-    "la_liga":    "la_liga",
-    "laliga":     "la_liga",
-    "premier":    "premier_league",
+    "la_liga":        "la_liga",
+    "laliga":         "la_liga",
+    "premier":        "premier_league",
     "premier_league": "premier_league",
-    "bundesliga": "bundesliga",
-    "serie_a":    "serie_a",
-    "seriea":     "serie_a",
-    "ligue_1":    "ligue_1",
-    "ligue1":     "ligue_1",
-    "todas":      "todas",
+    "bundesliga":     "bundesliga",
+    "serie_a":        "serie_a",
+    "seriea":         "serie_a",
+    "ligue_1":        "ligue_1",
+    "ligue1":         "ligue_1",
+    "todas":          "todas",
 }
 
 FOOTBALL_MENU = (
@@ -60,7 +58,6 @@ MENU_MAP = {
     "6": "todas",
 }
 
-# Sesiones activas: evita que dos analisis corran al mismo tiempo
 _running = False
 
 intents = _discord.Intents.default()
@@ -77,47 +74,46 @@ async def on_ready():
 async def analizar(ctx, liga_arg: str = None):
     global _running
 
-    # Solo responder en el canal configurado
     if ctx.channel.id != DISCORD_CHANNEL_ID:
         return
 
     if _running:
-        await ctx.send("⚠️ Ya hay un analisis en curso. Espera a que termine.")
+        await ctx.send("Ya hay un analisis en curso. Espera a que termine.")
         return
 
-    # Determinar deporte y ligas seleccionadas
     selected_leagues = None
+    arg = liga_arg.lower().strip() if liga_arg else None
 
-    if liga_arg is None:
+    if arg is None:
         await ctx.send(
-            "**Selecciona deporte:**\n"
-            "`!analizar nba` — NBA\n"
-            "`!analizar futbol` — Futbol (te pregunta la liga)\n"
-            "`!analizar todas` — Todas las ligas de futbol"
+            "**Uso:**\n"
+            "`!analizar nba`\n"
+            "`!analizar futbol` — te pregunta la liga\n"
+            "`!analizar todas` — las 5 ligas europeas\n"
+            "`!ayuda` — ver todos los comandos"
         )
         return
 
-    arg = liga_arg.lower().strip()
-
-    # NBA
     if arg == "nba":
         selected_leagues = {k: v for k, v in LEAGUES.items() if v["sport"] == "basketball"}
 
-    # Futbol sin liga especifica → preguntar
     elif arg == "futbol":
         await ctx.send(FOOTBALL_MENU)
 
         def check(m):
-            return m.author == ctx.author and m.channel == ctx.channel and m.content in MENU_MAP
+            return (
+                m.author == ctx.author
+                and m.channel == ctx.channel
+                and m.content in MENU_MAP
+            )
 
         try:
             reply = await bot.wait_for("message", timeout=30.0, check=check)
             arg = MENU_MAP[reply.content]
         except asyncio.TimeoutError:
-            await ctx.send("⏱ Tiempo agotado. Vuelve a escribir `!analizar futbol`.")
+            await ctx.send("Tiempo agotado. Escribe `!analizar futbol` para intentar de nuevo.")
             return
 
-    # Liga especifica o "todas"
     if arg == "todas":
         selected_leagues = {k: v for k, v in LEAGUES.items() if v["sport"] == "football"}
     elif arg in FOOTBALL_ALIASES:
@@ -129,22 +125,20 @@ async def analizar(ctx, liga_arg: str = None):
 
     if selected_leagues is None:
         await ctx.send(
-            "Liga no reconocida. Opciones validas:\n"
-            "`nba`, `futbol`, `todas`, `premier`, `la_liga`, `bundesliga`, `serie_a`, `ligue_1`"
+            "Liga no reconocida. Opciones: `nba`, `futbol`, `todas`, "
+            "`premier`, `la_liga`, `bundesliga`, `serie_a`, `ligue_1`"
         )
         return
 
-    # Correr el analisis
     _running = True
     try:
         from orchestrator import BettingBotOrchestrator
         orquestador = BettingBotOrchestrator(selected_leagues=selected_leagues)
-        # El orquestador usa el cliente del bot directamente
         orquestador.discord_client = bot
         orquestador.discord_channel_id = DISCORD_CHANNEL_ID
         await orquestador.run_from_discord()
     except Exception as e:
-        await ctx.send(f"❌ Error durante el analisis: `{e}`")
+        await ctx.send(f"Error durante el analisis: `{e}`")
         print(f"[Bot] Error: {e}")
     finally:
         _running = False
@@ -156,17 +150,34 @@ async def ayuda(ctx):
         return
     await ctx.send(
         "**Comandos disponibles:**\n"
-        "`!analizar nba` — Analiza partidos de NBA en la proxima hora\n"
-        "`!analizar futbol` — Selecciona liga de futbol\n"
+        "`!analizar nba` — NBA en la proxima hora\n"
+        "`!analizar futbol` — Selecciona liga\n"
         "`!analizar premier` — Premier League\n"
         "`!analizar la_liga` — La Liga\n"
         "`!analizar bundesliga` — Bundesliga\n"
         "`!analizar serie_a` — Serie A\n"
         "`!analizar ligue_1` — Ligue 1\n"
         "`!analizar todas` — Las 5 ligas europeas\n"
-        "`!ayuda` — Muestra este mensaje"
+        "`!ayuda` — Este mensaje"
     )
 
 
+# ── Arranque: FastAPI + Discord en paralelo ───────────────────────────────────
+
+def run_web():
+    """Corre uvicorn en hilo separado."""
+    port = int(__import__("os").environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port, log_level="warning")
+
+
+async def run_bot():
+    """Corre el bot de Discord."""
+    await bot.start(DISCORD_BOT_TOKEN)
+
+
 if __name__ == "__main__":
-    bot.run(DISCORD_BOT_TOKEN)
+    # Arrancar FastAPI en un hilo y el bot en el event loop principal
+    thread = threading.Thread(target=run_web, daemon=True)
+    thread.start()
+    print("[Bot] Servidor web iniciado.")
+    asyncio.run(run_bot())
